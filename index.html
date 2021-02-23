@@ -1,0 +1,904 @@
+<!DOCTYPE>
+<!DOCTYPE html>
+<html>
+<head>
+<title>VAST 2018</title>
+<style type="text/css">
+#detail {
+    width: 160px;
+    background-color: #eee;
+    position: absolute; 
+    top: 140px; 
+    right: 0px; 
+    padding: 6px; 
+    border: solid 1px #ccc;
+    font-size: 12px; 
+    line-height: 18px;
+    z-index: 10; 
+    display: none; 
+    border-radius: 6px; 
+    box-shadow: 2px 2px 6px #aaa; 
+}
+#controlPanelContainer {
+    width: 600px;
+    height: 140px; 
+    background-color: #eee;
+    position: absolute; 
+    top: 30px; 
+    right: 0px; 
+    padding: 6px; 
+    border: solid 1px #ccc; 
+    font-size: 14px; 
+    line-height: 28px; 
+    z-index: 11; 
+    border-radius: 6px; 
+    box-shadow: 0px 0px 6px #aaa;
+    display: none;
+}
+#linePlotContainer {
+    width: 600px;
+    /*height: 140px; */
+    background-color: #eee;
+    position: absolute; 
+    top: 200px; 
+    right: 0px; 
+    padding: 6px; 
+    border: solid 1px #ccc; 
+    font-size: 14px; 
+    z-index: 11; 
+    border-radius: 6px; 
+    box-shadow: 0px 0px 6px #aaa;
+    display: none;
+}
+#mapDivContainer {
+    width: 600px;
+    /*height: 140px; */
+    background-color: #eee;
+    position: absolute; 
+    top: 370px; 
+    right: 0px; 
+    padding: 6px; 
+    border: solid 1px #ccc; 
+    font-size: 14px; 
+    z-index: 11; 
+    border-radius: 6px; 
+    box-shadow: 0px 0px 6px #aaa;
+    display: none;
+}
+#btnControlPanel {
+    width: 140px;
+    height: 40px;
+    background-color: #eee;
+    position: absolute;
+    top: 80px;
+    right: -68px;
+    padding: 6px; 
+    border: solid 1px #ccc; 
+    font-size: 14px; 
+    line-height: 20px; 
+    text-align: center;
+    z-index: 10; 
+    border-radius: 9px 9px 0px 0px; 
+    box-shadow: 0px 0px 6px #aaa;
+    transform-origin: center center;
+    transform: rotate(-90deg);
+    cursor: pointer;
+}
+#btnControlPanel:hover {
+    right: -64px;
+}
+#btnLineGraph {
+    width: 140px;
+    height: 40px;
+    background-color: #eee;
+    position: absolute;
+    top: 250px;
+    right: -68px;
+    padding: 6px; 
+    border: solid 1px #ccc; 
+    font-size: 14px; 
+    line-height: 20px; 
+    text-align: center;
+    z-index: 10; 
+    border-radius: 9px 9px 0px 0px; 
+    box-shadow: 0px 0px 6px #aaa;
+    transform-origin: center center;
+    transform: rotate(-90deg);
+    cursor: pointer;
+}
+#btnLineGraph:hover {
+    right: -64px;
+}
+#btnMap {
+    width: 140px;
+    height: 40px;
+    background-color: #eee;
+    position: absolute;
+    top: 420px;
+    right: -68px;
+    padding: 6px; 
+    border: solid 1px #ccc; 
+    font-size: 14px; 
+    line-height: 20px; 
+    text-align: center;
+    z-index: 10; 
+    border-radius: 9px 9px 0px 0px; 
+    box-shadow: 0px 0px 6px #aaa;
+    transform-origin: center center;
+    transform: rotate(-90deg);
+    cursor: pointer;
+}
+#btnMap:hover {
+    right: -64px;
+}
+#linePlotDiv {
+  width: 600px;
+  height:280px;
+}
+  #clonedGroup {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 10px;
+    height: 10px;
+    margin: 0px;
+    padding: 0px;
+    overflow: visible;
+    z-index: 100;
+  }
+</style>
+</head>
+<body>
+<div class="loader gif"></div>
+<div id="contentDiv">
+    <div id="mapHeader" style="height: 20px; width: 864px;">
+        <svg id="mapHeaderSVG" width="1200px"></svg>
+    </div>
+    <div id="discreteHeatMapDiv">
+    </div>
+    <div id="detail">
+        <i onclick="closeThis(this)" style="font-style: normal; cursor: pointer; line-height: 16px;">[-] </i> Detail view
+        <div id="info" style="word-wrap: break-word;"></div><hr/>
+        <div id="rawdata"></div>
+    </div>
+    <div id="controlPanelContainer" class="dragContainer">
+        <i id="btnControlPanelClose" onclick="closeThis(this)" style="font-style: normal; cursor: pointer;">[-] </i>
+        Control panel<hr/>
+        Group by
+        <select id="groupOrder" onchange="changeOrder(this.id, this.value)">
+            <option value="measure">measure</option>
+            <option value="location">location</option>
+        </select>
+        Location order
+        <select id="locationOrder" onchange="changeOrder(this.id, this.value)">
+            <option value="alphabetical">alphabetical</option>
+            <option value="similarity">similarity</option>
+            <option value="downstream">downstream</option>
+            <option value="distance">distance</option>
+            <option value="sampling">sampling</option>
+        </select>
+        Measure order
+        <select id="measureOrder" onchange="changeOrder(this.id, this.value)">
+            <option value="alphabetical">alphabetical</option>
+            <option value="similarity">similarity</option>
+            <option value="sampling">sampling</option>
+        </select></br>
+        Height <input type="range" id="boxHeightSlider">
+        Display max value <input type="checkbox" id="outlierCheckbox" checked="checked" onchange="toggleOutlier(this)">
+        Lensing <input type="checkbox" id="lensingCheckbox" onchange="toggleLensing(this)">
+    </div>
+    <div id="btnControlPanel" onclick="openPanel(this)">[+] Control panel</div>
+    <div id="linePlotContainer" class="dragContainer">
+        <i id="btnLineGraphClose" onclick="closeThis(this)" style="font-style: normal; cursor: pointer;">[-] </i>
+        Line plot<hr/>
+        <div id="linePlotDiv"></div>
+    </div>
+    <div id="btnLineGraph" onclick="openPanel(this)">[+] Line plot
+    </div>
+    <div id="mapDivContainer" class="dragContainer">
+        <i id="btnMapClose" onclick="closeThis(this)" style="font-style: normal; cursor: pointer;">[-] </i>
+        Map<hr/>
+      <img id="mapImage" src="image/Waterways Final.png" alt="">
+    </div>
+    <div id="btnMap" onclick="openPanel(this)">[+] Map</div>
+</div>
+<script src="lib/d3.v3.min.js"></script>
+<script src="lib/plotly.min.js"></script>
+<script src="lib/fisheye.js"></script>
+<script>
+//时间轴
+for (var i = 2005; i < 2017; i++) {
+    d3.select("#mapHeaderSVG").append("text")
+    .attr("x", 72*(i-2005))
+    .attr("y", 10)
+    .style("font-size", 10)
+    .style("stroke", "#000")
+    .style("stroke-width", "0.4px")
+    .text(i);
+}
+
+var measures = ["AGOC-3A", "Alachlor", "Aldrin", "alpha-Hexachlorocyclohexane", "Ammonium", "Anionic active surfactants", "Arsenic", "Atrazine", "beta-Hexaxchlorocyclohexane", "Bicarbonates", "Biochemical Oxygen", "Cadmium", "Calcium", "Chemical Oxygen Demand (Cr)", "Chemical Oxygen Demand (Mn)", "Chlorides", "Chlorodinine", "Chromium", "Copper", "Cyanides", "Dieldrin", "Dissolved oxygen", "Dissolved silicates", "Endosulfan (alpha)", "Endosulfan (beta)", "Endrin", "Fecal coliforms", "gamma-Hexachlorocyclohexane", "Heptachlor", "Heptachloroepoxide", "Iron", "Lead", "Magnesium", "Manganese", "Mercury", "Methylosmoline", "Metolachlor", "Nickel", "Nitrates", "Nitrites", "Orthophosphate-phosphorus", "Oxygen saturation", "p,p-DDD", "p,p-DDE", "p,p-DDT", "Petroleum hydrocarbons", "Potassium", "Silica (SiO2)", "Simazine", "Sodium", "Sulfides", "Sulphates", "Tetrachloromethane", "Total coliforms", "Total dissolved phosphorus", "Total dissolved salts", "Total hardness", "Total nitrogen", "Total organic carbon", "Total phosphorus", "Water temperature", "Zinc"];
+
+var locations = ["Achara", "Boonsri", "Busarakhan", "Chai", "Decha", "Kannika", "Kohsoom", "Sakda", "Somchair", "Tansanee"];
+var downstream = ["Kannika", "Chai", "Busarakhan", "Kohsoom", "Boonsri", "Sakda", "Somchair", "Achara", "Tansanee", "Decha"];
+var distance = ["Kohsoom", "Boonsri", "Busarakhan", "Chai", "Kannika", "Achara", "Somchair", "Sakda", "Tansanee", "Decha"];
+
+var locationOrder = locations, measureOrder = measures;
+
+var colors = ["#92BBE5", "#A4C7E4", "#BFD8E2", "#E1E1E1", "#E1E1D3", "#E5CF92", "#EBAA50", "#F07E00", "#F44400", "#F50000"];
+
+var svg = d3.select("#contentDiv")
+.append("svg")
+.attr("height", 4000)
+.attr("width", 1200);
+//.style("border", "solid #000 1px");
+
+var fisheye = d3.fisheye.circular()
+//.focus([360, 90]) // 初始焦点
+.radius(100) // 鱼眼范围
+.distortion(2);
+
+//载入原始文件
+var allData = null
+d3.csv("rowData.csv", function(error, docs) {
+  if (error) console.log(error);
+  allData = docs
+  // console.log(allData,'allData')
+})
+
+// 载入绘图数据
+d3.json("data.json", function(error, docs) {
+    if (error) console.log(error);
+    // console.log(docs.length);
+    // console.log(allData,'allData min')
+
+    /* 拖拽盒子方法 开始 */
+    d3.selectAll('.dragContainer').call(d3.behavior.drag()
+      .on("dragstart", boxDragStarted)
+      .on("drag", boxDragged)
+      .on("dragend", boxDragEnded)
+    )
+
+    let offsetX = 0
+    let offsetY =0
+
+    //拖拽（点击）盒子前：先获取盒子的偏移量
+    function boxDragStarted() {
+      let obj = d3.select(this) //获取当前点击的盒子，以获取其坐标
+      let boxX = obj.node().getBoundingClientRect().x
+      let boxY = obj.node().getBoundingClientRect().y
+      //d3.event.x鼠标坐标
+      offsetX = d3.event.sourceEvent.clientX - boxX
+      offsetY = d3.event.sourceEvent.clientY - boxY
+    }
+    //拖拽盒子过程：
+    function boxDragged() {
+      let obj = d3.select(this)
+      let currentCoordX = d3.event.sourceEvent.clientX - offsetX
+      let currentCoordY = d3.event.sourceEvent.clientY - offsetY
+      obj.style('left', currentCoordX + 'px')
+      obj.style('top', currentCoordY + 'px')
+    }
+    //释放拖拽的盒子：
+    function boxDragEnded() {
+      d3.event.sourceEvent.stopPropagation() //不再派发事件
+      console.log('???')
+    }
+    /* 拖拽盒子方法 结束 */
+
+    /* 拖拽长条方格至直线 开始 */
+
+    //定义折线图布局对象
+    var plotLayout = {
+      groupColors: d3.schemeDark2,
+      groupByLocation: true,
+      //添加删除按钮
+      addClearBtn :function() {
+        let htmlString = '<a id="clearBtn" rel="tooltip" class="modebar-btn" data-title="Clear current graph" data-toggle="false" data-gravity="n">' +
+          '<svg width="16" height="16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 1000 1000" enable-background="new 0 0 1000 1000" xml:space="preserve">'+
+          '<g><path d="M767,973.2H251.7c-45.7,0-83-36.4-84.5-81.7l-67.4-721c-2.5-27.9,18.1-52.5,46-55c27.6-2.3,52.5,18.1,55,46l66.5,710.4h484.1l47.7-524.3c2.5-27.9,27.8-48.2,55-45.9c27.9,2.5,48.4,27.2,45.9,55.1l-48.6,534.9C850,936.8,812.7,973.2,767,973.2z"/><path d="M939.3,214.3H60.7c-28,0-50.7-22.7-50.7-50.7c0-28,22.7-50.7,50.7-50.7h878.6c28,0,50.7,22.7,50.7,50.7C990,191.6,967.3,214.3,939.3,214.3z"/><path d="M700.2,120.7c0,43.2-35,78.3-78.3,78.3H395c-43.2,0-78.3-35-78.3-78.3v-15.7c0-43.2,35-78.3,78.3-78.3h227c43.2,0,78.3,35,78.3,78.3V120.7z"/><path d="M366.5,827c-24.3,0-44.8-18.8-46.5-43.4l-31.1-436.3c-1.8-25.7,17.5-48.1,43.3-49.9c25.6-2,48.1,17.5,49.9,43.3L413.2,777c1.8,25.7-17.5,48.1-43.3,49.9C368.8,827,367.7,827,366.5,827z"/><path d="M516.5,827c-25.8,0-46.7-20.9-46.7-46.7l0-436.3c0-25.8,20.9-46.7,46.7-46.7c25.8,0,46.7,20.9,46.7,46.7v436.3C563.2,806.1,542.2,827,516.5,827z"/><path d="M666.4,827c-1.1,0-2.3,0-3.4-0.1c-25.8-1.8-45.1-24.2-43.3-49.9l31.1-436.3c1.9-25.7,24.6-45.3,49.9-43.3c25.8,1.8,45.1,24.2,43.3,49.9l-31.1,436.3C711.1,808.2,690.6,827,666.4,827z"/></g>'+
+          '</svg>'+
+          '</a>' //添加删除按钮
+        let fatherDiv = document.getElementsByClassName('modebar')[0]
+        let theDiv = document.createElement('div')
+        theDiv.setAttribute('class', 'modebar-group')
+        theDiv.innerHTML = htmlString.trim() //去掉两边的空格
+        fatherDiv.appendChild(theDiv)
+        let theElm = document.getElementById('clearBtn')
+        theElm.addEventListener('click', this.clearChart, false) //给这个按钮添加侦听click事件
+      },
+      //删除按钮，清空折线图
+      clearChart: function () {
+        // console.log('*****delete******')
+        // d3.select('#linePlotDiv').selectAll('*').remove() //因为classname不能再增加了
+        Plotly.purge('linePlotDiv')
+      }
+    }
+
+    //处理数据的细节：解包
+    function unpack (data, columnName) {
+      return data.map(row => row[columnName])
+    }
+
+    //画图操作
+    function realPlotLineGraph (location, measure, handler, color, group) {
+      let dataForLocation = allData.filter(d => d.location === location); //在data中找到所有的符合location的数据
+      let dataForMeasure = dataForLocation.filter(d => d.measure === measure)
+      let dates = unpack(dataForMeasure, 'sample date'); //时间list
+      let values = unpack(dataForMeasure, 'value'); //值的list
+      handler(location, measure, dates, values, color, group)
+    }
+
+    //定义拖拽需要使用的对象
+    var discreteHeatMapPlotter = {
+      transitionDuration: 500,
+      draggedLocation: null,
+      draggedMeasure: null,
+      dragOffset: null,
+      clonedGroup: d3.select("body").append('svg').attr("id", "clonedGroup").append("g").attr("id", "clonedGroup"),
+      plotLineGraph: function (location, measure, color, showLegend) {
+        realPlotLineGraph(location, measure, this.plotLineGraphHandler, color, showLegend)
+      },
+      cloneSelection: function (selection) {
+        let cloned = selection.html() //把拖拽的东西的html抓下来
+        this.clonedGroup.html(cloned) //添加到clonedGroup里边
+        return cloned //
+      },
+      plotLineGraphHandler: function (location, measure, x, y, color, showLegend) {
+        let trace = {
+          x: x,
+          y: y,
+          name: location + "-" + measure,
+          mode: 'markers+lines',
+          type: 'scatter',
+          marker: {
+            opacity: 0.3,
+            size: 4
+          },
+          line: {
+            width: 0.5
+          },
+          connectgaps: false
+        };
+        var layout = {
+          xaxis: {
+            title: "time"
+          },
+          yaxis: {
+            title: "value"
+          },
+          paper_bgcolor: 'rgba(0,0,0,0)',
+          plot_bgcolor: 'rgba(0,0,0,0)',
+          font: {
+            family: "Georgia,Times,serif",
+            size: 11
+          },
+          margin: {
+            l: 50,
+            r: 150,
+            t: 50,
+            b: 80,
+            pad: 0,
+            autoexpand: false
+          },
+          showlegend: true
+        }
+        if (color >= 0) {
+          trace.line.color = plotLayout.groupColors[color]
+          trace.name = plotLayout.groupByLocation ? location : measure
+          trace.legendgroup = trace.name
+          trace.showlegend = showLegend
+        }
+
+        let data = [trace]
+
+        Plotly.plot("linePlotDiv", data, layout)
+      }
+    }
+
+    //拖拽row开始
+    function rowDragStarted() {
+      // console.log('rowDragStarted!!!')
+      //每一次drag前，先清空clonedGroup
+      discreteHeatMapPlotter.clonedGroup.selectAll("*").remove()
+      let obj = d3.select(this)
+      let aCell = obj.select("rect").empty() ? obj.select("circle") : obj.select("rect")
+      if (!aCell) {
+        return
+      }
+      discreteHeatMapPlotter.draggedLocation = obj.attr('class').split('_')[1]
+      discreteHeatMapPlotter.draggedMeasure = obj.attr('class').split('_')[0]
+      discreteHeatMapPlotter.dragOffset = d3.event.sourceEvent.clientX
+      // console.log(discreteHeatMapPlotter.dragOffset,'d3.event.x')
+      discreteHeatMapPlotter.cloneSelection(obj)
+      // console.log(discreteHeatMapPlotter.cloneSelection(obj) ,'clonedGroup')
+      // console.log(cloneSelection(obj), 'obj')
+      // console.log(d3.mouse(this)[1], 'd3.mouse(this)[1]')
+      discreteHeatMapPlotter.clonedGroup
+        .style("display", "none") //Display "none" is to prevent it from hiding the underlining element that we can't click.
+        .attr("transform", "translate(" + (d3.event.sourceEvent.clientX - discreteHeatMapPlotter.dragOffset) + "," + d3.event.sourceEvent.clientY + ")")
+    }
+
+    //拖拽row时
+    function rowDragged() {
+      // console.log('rowDragged!!!')
+      discreteHeatMapPlotter.clonedGroup.style("display", "block").attr("opacity", 1.0)
+        .attr("transform", "translate(" + (d3.event.sourceEvent.clientX - discreteHeatMapPlotter.dragOffset) + ","
+          + d3.event.sourceEvent.clientY + ")");
+      // console.log(d3.event.sourceEvent.clientX, 'd3.event.sourceEvent.clientX')
+    }
+
+    //拖拽row结束
+    function rowDragEnded() {
+      // console.log('rowDragEnded!!!')
+      let linePlotDivBox = d3.select('#linePlotDiv').node().getBoundingClientRect()
+      let x = linePlotDivBox.x
+      let y = linePlotDivBox.y
+      let width = linePlotDivBox.width
+      let height = linePlotDivBox.height
+      let mousex = d3.event.sourceEvent.clientX
+      let mousey = d3.event.sourceEvent.clientY
+      if (mousex > x && mousex < x + width && mousey > y && mousey < y + height) {
+        if (discreteHeatMapPlotter.draggedLocation && discreteHeatMapPlotter.draggedMeasure) {
+          console.log(discreteHeatMapPlotter.draggedLocation, discreteHeatMapPlotter.draggedMeasure, '-=-=-=-=-=-=-=-= draggedLocation, draggedMeasure -=-=-=-=-=-=-=-=-=-=-=-=')
+          discreteHeatMapPlotter.plotLineGraph(discreteHeatMapPlotter.draggedLocation, discreteHeatMapPlotter.draggedMeasure)
+          //过滤重复创建的按钮
+          // console.log(d3.select('#clearBtn').empty(), 'd3.select(\'#clearBtn\').empty()')
+          if( d3.select('#clearBtn').empty() ) {
+            plotLayout.addClearBtn()
+          }
+        }
+      }
+      //生成plot折线图之后添加删除按钮
+      discreteHeatMapPlotter.clonedGroup.selectAll("*").attr("opacity", 1.0).transition().duration(discreteHeatMapPlotter.transitionDuration).attr("opacity", 1e-6).remove();
+      discreteHeatMapPlotter.draggedLocation = null
+      discreteHeatMapPlotter.draggedMeasure = null
+    }
+
+   /* 拖拽长条方格至直线 结束 */
+
+   /* 绘制地图坐标 开始 */
+
+    // 初始化MapPin
+    let mapInfo = {
+      mapLocationList: [
+        {name: "Dump!", stream: 0, x: 473, y: 76},
+        {name: "Kohsoom", stream: 1, x: 477, y: 176},
+        {name: "Boonsri", stream: 1, x: 330, y: 86},
+        {name: "Busarakhan", stream: 1, x: 475, y: 245},
+        {name: "Chai", stream: 1, x: 385, y: 290},
+        {name: "Kannika", stream: 1, x: 420, y: 453},
+        {name: "Achara", stream: 2, x: 246, y: 189},
+        {name: "Somchair", stream: 2, x: 180, y: 275},
+        {name: "Sakda", stream: 2, x: 330, y: 560},
+        {name: "Tansanee", stream: 3, x: 182, y: 432},
+        {name: "Decha", stream: 4, x: 46, y: 367}
+      ],
+      pinSize:{ width: 28, height: 38 }
+    }
+
+    //在MapContainer上添加MapPin
+    let pinList = d3.select('#mapDivContainer').selectAll('.mapPin').data(mapInfo.mapLocationList).enter()
+      .append('img').attr('src', 'image/locationpin.png')
+      .style('position', 'absolute')
+      .style('opacity', 0)
+      .style('left', d => ((d.x - mapInfo.pinSize.width/2 + 10) + 'px'))
+      .style('top', d => ((d.y - mapInfo.pinSize.height/2 + 20) + 'px'))
+
+    //当鼠标移动至某个rect时，显示对应的Pin
+    function setVisiblePin (location) {
+      pinList.transition().duration(discreteHeatMapPlotter.transitionDuration)
+        .style('opacity', d => d.name === location ? 1 : 0)
+    }
+
+   /* 绘制地图坐标 结束 */
+
+    //先按照measure分组绘图，方便确定颜色和边缘厚度比例尺
+    for (var i = 0; i < measures.length; i++) {
+        console.log(i);
+
+        //求平均数和采样数的最值数组
+        var findAverage = [], findCount = [];
+
+        //循环所有location
+        for (var j = 0; j < locations.length; j++) {
+            if (docs[measures[i]][locations[j]]) {
+                var rowData = docs[measures[i]][locations[j]];
+
+                //把每个格子对应的平均数和采样数push进数组
+                for (var k = 0; k < 144; k++) {
+                    var k_str = k.toString();
+                    if (rowData[k_str]) {
+                        findAverage.push(rowData[k_str].average);
+                        findCount.push(rowData[k_str].count);
+                    }
+                }
+            }
+        }
+
+        //取到当前measure的平均数和采样数的最大最小值
+        var averageMax = Math.max.apply(Math, findAverage);
+        var averageMin = Math.min.apply(Math, findAverage);
+        var countMax = Math.max.apply(Math, findCount);
+        var countMin = Math.min.apply(Math, findCount);
+        //console.log(averageMin, averageMax);
+
+        //定义颜色比例尺
+        var colorScale = d3.scale.linear()
+        .domain(d3.range(averageMin, averageMax, (averageMax-averageMin)/colors.length))
+        .range(colors);
+
+        //定义边缘厚度比例尺
+        var strokeScale = d3.scale.linear()
+        .domain([countMin, countMax])
+        .range([0.1, 0.8]);
+
+        //重新循环所有location, 开始绘图
+        for (var j = 0; j < locations.length; j++) {
+            if (docs[measures[i]][locations[j]]) {
+                var rowKey = measures[i].replace(/[\ |\(|\)|\,|\-]/g,"") + "_" + locations[j].replace(/[\ |\(|\)|\,|\-]/g,"");  //去掉字符中的符号, 因为 d3.select 不能选择带有空格和括号的类名
+                //console.log(rowKey);
+                var row = svg.append("g")
+                .attr("class", rowKey)  //以 measure_location 格式给每一行加标签 
+                .attr("transform", function(d) {
+                    return "translate(0," + (6*i*locations.length + 6*j) + ")";
+                })
+                /*.on("click", function(d) {
+                    console.log(d3.select(this).attr("transform"));
+                })*/;
+
+                //在每一行的 g 中循环添加 rect
+                for (var k = 0; k < 144; k++) {
+                    //判断该位置是否存在方块或圆点
+                    var k_str = k.toString();
+                    if (docs[measures[i]][locations[j]][k_str]) {
+                        //添加位置数据
+                        docs[measures[i]][locations[j]][k_str].x = 6*k;
+                        docs[measures[i]][locations[j]][k_str].y = 6*i*locations.length + 6*j;
+
+                        //最大值对应圆点
+                        if (docs[measures[i]][locations[j]][k_str].average == averageMax) {
+                            row.datum(docs[measures[i]][locations[j]][k_str])
+                            .append("circle")
+                            .attr("r", 2.95)
+                            .attr("cx", function(d) {
+                                return d.x + 2.95;
+                            })
+                            .attr("cy", 2.95)
+                            .attr("class", "circle")
+                            .attr("fill", function(d) {
+                                return colorScale(d.average);
+                            })
+                            .attr("stroke", "black")
+                            .attr("stroke-width", function(d) {
+                                return strokeScale(d.count);
+                            })
+                            .attr("stroke-opacity", 0.8)
+                            .style("cursor", "pointer")
+                            .on("click", function(d,i) {
+                                //console.log(d);
+
+                                document.getElementById("detail").style.display = "block";
+                                document.getElementById("rawdata").innerHTML = "";
+
+                                //获取点击元素所在g的类名并显示
+                                document.getElementById("info").innerHTML = d3.select(this.parentNode).attr("class").split("_")[0] + " at " + d3.select(this.parentNode).attr("class").split("_")[1];
+
+                                //更新rawdata中的文本
+                                console.log(d.raw);
+                                for (var item = 0; item < d.raw.length; item++) {
+                                    document.getElementById("rawdata").innerHTML += (d.raw[item][0] + "&nbsp&nbsp" + d.raw[item][1] + "</br>");
+                                }
+
+                                //更新detail位置
+                                var top = this.getBoundingClientRect().top;
+                                var left = this.getBoundingClientRect().left;
+                                //console.log(top, left);
+                                document.getElementById("detail").style.top = (top+10) + "px";
+                                document.getElementById("detail").style.left = (left+10) + "px";
+                            });
+                        }
+                        //其他值对应方块
+                        else {
+                            row.datum(docs[measures[i]][locations[j]][k_str])
+                            .append("rect")
+                            .attr("height", 5.9)
+                            .attr("width", 5.9)
+                            .attr("x", function(d) {
+                                return d.x;
+                            })
+                            .attr("y", 0)
+                            .attr("class", "rect")
+                            .attr("fill", function(d) {
+                                return colorScale(d.average);
+                            })
+                            .attr("stroke", "black")
+                            .attr("stroke-width", function(d) {
+                                return strokeScale(d.count);
+                            })
+                            .attr("stroke-opacity", 0.8)
+                            .style("cursor", "pointer")
+                            .on("click", function(d,i) {
+                                //console.log(d);
+
+                                document.getElementById("detail").style.display = "block";
+                                document.getElementById("info").innerHTML = d3.select(this.parentNode).attr("class").split("_")[0] + " at " + d3.select(this.parentNode).attr("class").split("_")[1];
+                                document.getElementById("rawdata").innerHTML = "";
+                                //console.log(d.raw);
+                                for (var item = 0; item < d.raw.length; item++) {
+                                    document.getElementById("rawdata").innerHTML += (d.raw[item][0] + "&nbsp&nbsp" + d.raw[item][1] + "</br>");
+                                }
+                                var top = this.getBoundingClientRect().top;
+                                var left = this.getBoundingClientRect().left;
+                                //console.log(top, left);
+                                document.getElementById("detail").style.top = (top+10) + "px";
+                                document.getElementById("detail").style.left = (left+10) + "px";
+                            });
+                        }
+                    }
+                }
+
+                //给每一行添加拖拽事件
+                row.call(d3.behavior.drag()
+                  .on("dragstart", rowDragStarted)
+                  .on("drag", rowDragged)
+                  .on("dragend", rowDragEnded));
+                row.on("mouseenter", function() {
+                  let obj = d3.select(this)
+                  let location = obj.attr('class').split('_')[1]
+                  setVisiblePin(location)
+                })
+            }
+        }
+
+        //添加分隔线
+        svg.append("rect")
+        .attr("width", 864+400)
+        .attr("height", 0.6)
+        .attr("x", 0)
+        .attr("y", 6*i*locations.length)
+        .attr("class", "separator");
+    }
+});
+
+//变换measure或location排列顺序
+function changeOrder(selectId,selectValue) {
+    d3.selectAll(".separator").remove();
+    // console.log(selectId, selectValue);
+
+    //改变location排列顺序
+    if (selectId == "locationOrder") {
+        if (selectValue == "alphabetical") {
+            locationOrder = locations;
+        }
+        else if (selectValue == "similarity") {}  //待补充
+        else if (selectValue == "downstream") {
+            locationOrder = downstream;
+        }
+        else if (selectValue == "distance") {
+            locationOrder = distance;
+        }
+        else if (selectValue == "sampling") {}  //待补充
+        // console.log("locationOrder", locationOrder);
+    }
+
+    //改变measure排列顺序
+    else if (selectId == "measureOrder") {
+        if (selectValue == "alphabetical") {
+            measureOrder = measures;
+        }
+        else if (selectValue == "similarity") {}  //待补充
+        else if (selectValue == "sampling") {}  //待补充
+        // console.log("measureOrder", measureOrder);
+    }
+
+    //排序
+    var groupOrderValue = document.getElementById("groupOrder").value;
+
+    //Group by location
+    if (groupOrderValue == "location") {
+        for (var i = 0; i < locationOrder.length; i++) {
+            for (var j = 0; j < measureOrder.length; j++) {
+                var rowName = "." + measureOrder[j].replace(/[\ |\(|\)|\,|\-]/g,"") + "_" + locationOrder[i].replace(/[\ |\(|\)|\,|\-]/g,"");
+                var row = d3.select(rowName)
+                .transition()
+                .duration(800)
+                .attr("transform", function(d) {
+                    return "translate(0," + (6*i*measureOrder.length + 6*j) + ")";
+                });
+
+                row.selectAll("rect")
+                .each(function(d) {
+                  d.y = 6*i*measures.length + 6*j;
+                });
+                row.selectAll("circle")
+                .each(function(d) {
+                  d.y = 6*i*measures.length + 6*j;
+                });
+            }
+            //分割线
+            svg.append("rect")
+            .attr("width", 864+400)
+            .attr("height", 0.6)
+            .attr("x", 0)
+            .attr("y", 6*i*measureOrder.length)
+            .attr("class", "separator");
+        }
+    }
+
+    //Group by measure
+    else if (groupOrderValue == "measure") {
+        for (var i = 0; i < measureOrder.length; i++) {
+            for (var j = 0; j < locationOrder.length; j++) {
+                var rowName = "." + measureOrder[i].replace(/[\ |\(|\)|\,|\-]/g,"") + "_" + locationOrder[j].replace(/[\ |\(|\)|\,|\-]/g,"");
+                var row = d3.select(rowName)
+                .transition()
+                .duration(800)
+                .attr("transform", function(d) {
+                    return "translate(0," + (6*i*locationOrder.length + 6*j) + ")";
+                });
+
+                row.selectAll("rect")
+                .each(function(d) {
+                  d.y = 6*i*locations.length + 6*j;
+                });
+
+                row.selectAll("circle")
+                .each(function(d) {
+                  d.y = 6*i*locations.length + 6*j;
+                });
+            }
+            //分割线
+            svg.append("rect")
+            .attr("width", 864+400)
+            .attr("height", 0.6)
+            .attr("x", 0)
+            .attr("y", 6*i*locationOrder.length)
+            .attr("class", "separator");
+        }
+    }
+}
+
+//关闭窗口
+function closeThis(click) {
+    click.parentElement.style.display = "none";
+    if (click.id == "btnControlPanelClose") {
+      document.getElementById("btnControlPanel").style.display = "block";
+    }
+    else if (click.id == "btnLineGraphClose") {
+      document.getElementById("btnLineGraph").style.display = "block";
+    }
+    else if (click.id == "btnMapClose") {
+      document.getElementById("btnMap").style.display = "block";
+    }
+}
+
+//显示面板
+function openPanel(click) {
+    // console.log(click.id);
+    if (click.id == "btnControlPanel") {
+        document.getElementById("controlPanelContainer").style.display = "block";
+        document.getElementById("btnControlPanel").style.display = "none";
+    }
+    else if (click.id == "btnLineGraph") {
+        document.getElementById("linePlotContainer").style.display = "block";
+        document.getElementById("btnLineGraph").style.display = "none";
+    }
+    else if (click.id == "btnMap") {
+        document.getElementById("mapDivContainer").style.display = "block";
+      document.getElementById("btnMap").style.display = "none";
+    }
+}
+
+//Detail拖拽
+function dragFunc(id) {
+    var Drag = document.getElementById(id);
+    Drag.onmousedown = function(event) {
+        var ev = event || window.event;
+        event.stopPropagation();
+        var disX = ev.clientX - Drag.offsetLeft;
+        var disY = ev.clientY - Drag.offsetTop;
+        document.onmousemove = function(event) {
+            var ev = event || window.event;
+            Drag.style.left = ev.clientX - disX + "px";
+            Drag.style.top = ev.clientY - disY + "px";
+            Drag.style.cursor = "move";
+        };
+    };
+    Drag.onmouseup = function() {
+        document.onmousemove = null;
+        this.style.cursor = "default";
+    };
+};
+//dragFunc("detail");
+
+// 是否显示最大值
+function toggleOutlier(checkbox) {
+    console.log(checkbox.checked);
+    if (checkbox.checked == false) {
+        svg.selectAll("circle")
+        .each(function(d) {
+            d3.select(this)
+            .style("opacity", 1) // 过渡前要有原始状态
+            .transition()
+            .duration(400)
+            .style("opacity", 0);
+        })
+    }
+    else if (checkbox.checked == true) {
+        svg.selectAll("circle")
+        .each(function(d) {
+            d3.select(this)            
+            .style("opacity", 0)
+            .transition()
+            .duration(400)
+            .style("opacity", 1);
+        })
+    }
+}
+
+// 是否使用鱼眼效果
+function toggleLensing(checkbox) {
+    console.log(checkbox.checked);
+    if (checkbox.checked == true) {
+        svg.on("mousemove", function() {
+            fisheye.focus(d3.mouse(this));
+            svg.selectAll(".rect")
+            .each(function(d) {
+                var fisheyed = {};
+                fisheyed.x = d.x;
+                fisheyed.y = d.y;
+                fisheyed = fisheye(fisheyed);
+                d3.select(this)
+                .attr("x", fisheyed.x)
+                .attr("y", fisheyed.y - d.y)
+                .attr("height", fisheyed.z * 5.9)
+                .attr("width", fisheyed.z * 5.9)
+            });            
+            svg.selectAll(".circle")
+            .each(function(d) {
+                var fisheyed = {};
+                fisheyed.x = d.x + 2.95;
+                fisheyed.y = d.y + 2.95;
+                fisheyed = fisheye(fisheyed);
+                d3.select(this)
+                .attr("r", fisheyed.z * 2.95)
+                .attr("cx", fisheyed.x)
+                .attr("cy", fisheyed.y - d.y);
+            })
+        });
+    }
+    else if (checkbox.checked == false) {
+        svg.on("mousemove", null);
+        svg.selectAll(".rect")
+        .each(function(d) {
+            var fisheyed = {};
+            fisheyed.x = d.x;
+            fisheyed.y = d.y;
+            fisheyed = fisheye(fisheyed);
+            d3.select(this)
+            .attr("height", 5.9)
+            .attr("width", 5.9)
+            .attr("x", function(d) {
+                return d.x;
+            })
+            .attr("y", 0)
+        });            
+        svg.selectAll(".circle")
+        .each(function(d) {
+            var fisheyed = {};
+            fisheyed.x = d.x;
+            fisheyed.y = d.y;
+            fisheyed = fisheye(fisheyed);
+            d3.select(this)
+            .attr("r", 2.95)
+            .attr("cx", function(d) {
+                return d.x + 2.95;
+            })
+            .attr("cy", 2.95)
+        })
+    }
+}
+</script>
+</body>
+</html>
